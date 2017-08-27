@@ -1,0 +1,6 @@
+selinux:
+  lookup:
+    enable: True
+    mode: enforcing
+    booleans:
+      nis_enabled: True   
