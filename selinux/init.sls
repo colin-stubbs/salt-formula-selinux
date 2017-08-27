@@ -40,7 +40,7 @@ extra_modules_dir:
     - require:
       - pkg: selinux-policy
 
-{% for boolean, value in selinux_map.booleans %}
+{% for boolean, value in selinux_map.booleans.items() %}
 {{ boolean }}:
   selinux.boolean:
     - value: {{ value }}
