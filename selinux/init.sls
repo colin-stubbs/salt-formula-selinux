@@ -1,6 +1,7 @@
 {% from "selinux/map.jinja" import selinux_map with context %}
 
-{{ selinux_map.mode }}
+{{ selinux_map.mode }}:
+  selinux.mode
 
 policycoreutils-python:
   pkg.installed:
