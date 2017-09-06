@@ -6,9 +6,6 @@ Configures SELinux
 Available states
 ================
 
-.. contents::
-    :local:
-
 ``selinux``
 --------
 
