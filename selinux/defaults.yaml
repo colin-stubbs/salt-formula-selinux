@@ -1,0 +1,4 @@
+selinux:
+  enable: True
+  mode: enforcing
+  lookup: {}

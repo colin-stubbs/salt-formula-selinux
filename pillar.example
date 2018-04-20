@@ -1,6 +1,29 @@
 selinux:
   lookup:
-    enable: True
-    mode: enforcing
-    booleans:
-      nis_enabled: True   
+    pkgs:
+      - policycoreutils-python
+      - libselinux
+      - libselinux-python
+      - libselinux-utils
+      - selinux-policy
+      - checkpolicy
+      - selinux-policy-targeted
+    locations:
+      extra_modules: /etc/selinux/extra/modules
+  enable: True
+  mode: enforcing
+  booleans:
+    example_boolean:
+      value: True
+      persist: False
+    another_boolean:
+      value: True
+      persist: True
+  modules:
+    example_module:
+      module_state: 'enabled'
+      install: True
+    another_module:
+      remove: True
+  fcontext_policy:
+    blah: blah

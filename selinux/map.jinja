@@ -1,9 +1,27 @@
-{% set selinux_map = salt['grains.filter_by']({
+{% import_yaml 'selinux/defaults.yaml' as default_settings %}
+
+{% set os_family_map = salt['grains.filter_by']({
     'default': {
-      'mode': 'enforcing',
-      'booleans': {}
+      'pkgs': [
+        'policycoreutils-python',
+        'libselinux',
+        'libselinux-python',
+        'libselinux-utils',
+        'selinux-policy',
+        'checkpolicy',
+        'selinux-policy-targeted',
+        ],
+      'locations': {
+        'extra_modules': '/etc/selinux/extra/modules',
+      },
     },
-},
-merge=salt['pillar.get']('selinux:lookup', {}),
-default='default')
+}, grain='os_family', default='default', merge=salt['pillar.get']('selinux:lookup', {})) %}
+
+{% do default_settings.selinux.lookup.update(os_family_map) %}
+
+{% set selinux_map = salt['pillar.get'](
+    'selinux',
+    default=default_settings.selinux,
+    merge=True,
+  )
 %}

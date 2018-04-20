@@ -1,49 +1,67 @@
+{# selinux/init.sls #}
+
+{# import mapped variables from defaults, os/os_family based variants, and pillar config #}
 {% from "selinux/map.jinja" import selinux_map with context %}
 
-{{ selinux_map.mode }}:
-  selinux.mode
+{# we rely on salt minion grains to indicate if SELinux is available on the minion, if not don't bother trying to configure it #}
+{% if grains.selinux is defined and grains.selinux.enabled == True %}
 
-policycoreutils-python:
+{# installs all packages based on results from within map.jinja #}
+selinux-packages:
   pkg.installed:
-    - name: policycoreutils-python
+    - pkgs: {{ selinux_map.lookup.pkgs }}
 
-libselinux:
-  pkg.installed:
-    - name: libselinux
+{# controls operational mode, e.g. disabled/permissive/enforcing #}
+selinux-mode:
+  selinux.mode:
+    - name: {{ selinux_map.mode }}
+    - require:
+      - pkg: selinux-packages
 
-libselinux-python:
-  pkg.installed:
-    - name: libselinux-python
-
-libselinux-utils:
-  pkg.installed:
-    - name: libselinux-utils
-
-selinux-policy:
-  pkg.installed:
-    - name: selinux-policy
-
-checkpolicy:
-  pkg.installed:
-    - name: checkpolicy
-
-selinux-policy-targeted:
-  pkg.installed:
-    - name: selinux-policy-targeted
-
-extra_modules_dir:
+{# this dir is not created by default on certain distros, make sure it is #}
+selinux-extra-modules-dir:
   file.directory:
-    - name: /etc/selinux/extra/modules
+    - name: {{ selinux_map.lookup.locations.extra_modules }}
     - makedirs: True
     - user: root
     - group: root
     - mode: 0755
     - require:
-      - pkg: selinux-policy
+      - pkg: selinux-packages
 
-{% for boolean, value in selinux_map.booleans.items() %}
-{{ boolean }}:
+{# set persistent booleans if configured to do so #}
+{% if selinux_map.booleans is defined %}
+{% for boolean, options in selinux_map.booleans.items() %}
+selinux-{{ boolean }}:
   selinux.boolean:
-    - value: {{ value }}
-    - persist: True
+    - name: {{ boolean }}
+    - value: {{ options.value|default(True) }}
+    - persist: {{ options.persist|default(True) }}
 {% endfor %}
+{% endif %} {# if selinux_map.booleans is defined #}
+
+{% if selinux_map.modules is defined %}
+{% for module, options in selinux_map.modules.items() %}
+selinux-module-{{ module }}:
+  selinux.module:
+    - name: {{ module }}
+    {% if options.module_state is defined %}
+    - module_state: {{ options.module_state }}
+    {% endif %}
+    {% if options.version is defined %}
+    - version: {{ options.version }}
+    {% endif %}
+    {% if options.install is defined %}
+    - install: {{ options.install }}
+    {% if options.source is defined %}
+    - source: {{ options.source }}
+    {% endif %}
+    {% elif options.remove is defined %}
+    - remove: {{ options.remove }}
+    {% endif %}
+{% endfor %}
+{% endif %} {# if selinux_map.modules is defined #}
+
+{% endif %} {# if grains.selinux.enabled == True #}
+
+{# EOF #}
