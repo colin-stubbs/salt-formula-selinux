@@ -18,6 +18,12 @@ selinux-mode:
     - require:
       - pkg: selinux-packages
 
+selinux-autorelabel:
+  file.touch:
+    - name: /.autorelabel
+    - onchanges:
+      - selinux: selinux-mode
+
 {# this dir is not created by default on certain distros, make sure it is #}
 selinux-extra-modules-dir:
   file.directory:
