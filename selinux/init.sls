@@ -26,13 +26,11 @@ selinux-autorelabel:
       - selinux: selinux-mode
 
 {# relabel file system immediately #}
-{% if selinux_map.relabel_immediately == True|default(True) %}
 selinux-fixfiles:
   cmd.run:
     - name: fixfiles relabel
     - onchanges:
       - selinux: selinux-mode
-{% endif %}
 
 {# this dir is not created by default on certain distros, make sure it is #}
 selinux-extra-modules-dir:
