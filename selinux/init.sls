@@ -3,13 +3,13 @@
 {# import mapped variables from defaults, os/os_family based variants, and pillar config #}
 {% from "selinux/map.jinja" import selinux_map with context %}
 
-{# we rely on salt minion grains to indicate if SELinux is available on the minion, if not don't bother trying to configure it #}
-{% if grains.selinux is defined and grains.selinux.enabled == True %}
-
 {# installs all packages based on results from within map.jinja #}
 selinux-packages:
   pkg.installed:
     - pkgs: {{ selinux_map.lookup.pkgs }}
+
+{# we rely on salt minion grains to indicate if SELinux is available on the minion, if not don't bother trying to configure it #}
+{% if grains.selinux is defined and grains.selinux.enabled == True %}
 
 {# controls operational mode, e.g. disabled/permissive/enforcing #}
 selinux-mode:
